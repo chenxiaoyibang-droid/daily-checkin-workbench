@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>每日打卡工作台 · 增肌减脂 · 控油抗炎</title>
+<style>
+  :root{
+    --pink:#ff8ec0; --pink-soft:#fff0f6;
+    --mint:#5fcf9e; --mint-soft:#eafaf4;
+    --lav:#b9a7ff; --peach:#ffc98c;
+    --ink:#6a5560; --muted:#a8969f;
+    --card:#ffffff; --line:#ffe1ec;
+    --good:#46c98b; --bad:#ff8aa0;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; color:var(--ink);
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:
+      radial-gradient(circle at 12% 16%, #ffe3f0 0, transparent 38%),
+      radial-gradient(circle at 88% 10%, #e3f6ff 0, transparent 40%),
+      radial-gradient(circle at 50% 102%, #e9fff4 0, transparent 46%),
+      linear-gradient(135deg,#fff5fa,#f3fbf7);
+    min-height:100vh;
+  }
+  .app{max-width:880px; margin:0 auto; padding:22px 16px calc(70px + env(safe-area-inset-bottom)); -webkit-tap-highlight-color:transparent;}
+  header.top{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin-bottom:16px; flex-wrap:wrap;
+  }
+  .title h1{font-size:25px; margin:0; letter-spacing:1px; color:var(--pink); text-shadow:1px 2px 0 #fff;}
+  .title p{margin:6px 0 0; color:var(--muted); font-size:13px;}
+  .reset{
+    border:2px solid #ffd0e2; background:#fff; color:#ff6f9c;
+    border-radius:999px; padding:9px 16px; cursor:pointer; font-size:13px; font-weight:800;
+    box-shadow:0 3px 0 #ffd0e2;
+  }
+  .reset:hover{transform:translateY(-1px);}
+  .reset:active{transform:translateY(2px); box-shadow:0 1px 0 #ffd0e2;}
+  nav.tabs{display:flex; gap:8px; flex-wrap:nowrap; overflow-x:auto; margin-bottom:18px; padding:8px 2px; position:sticky; top:0; z-index:30; background:rgba(255,246,250,.92); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); scrollbar-width:none; box-shadow:0 4px 10px rgba(255,158,196,.08);}
+  nav.tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    border:2px solid #ffe1ec; background:#fff; color:#d08aab;
+    border-radius:999px; padding:11px 17px; cursor:pointer; font-size:15px;
+    font-weight:800; transition:.15s; white-space:nowrap; flex:0 0 auto; touch-action:manipulation;
+  }
+  .tab:hover{transform:translateY(-2px); box-shadow:0 5px 12px rgba(255,158,196,.25);}
+  .tab.active{background:linear-gradient(135deg,#ffb3d6,#ff8ec0); color:#fff; border-color:#ff8ec0; box-shadow:0 5px 14px rgba(255,142,192,.4);}
+  .tab[data-tab="每周复盘"].active{background:linear-gradient(135deg,#a7e8d6,#5fcf9e); border-color:#5fcf9e; box-shadow:0 5px 14px rgba(95,207,158,.4);}
+
+  .reminders{
+    background:linear-gradient(135deg,#fff3d6,#ffe9f1);
+    border:2px dashed #ffc98c; border-radius:24px; padding:16px 18px; margin-bottom:18px;
+  }
+  .rem-title{font-weight:800; color:#e8893c; margin-bottom:8px; font-size:14px;}
+  .reminders ul{margin:0; padding-left:20px;}
+  .reminders li{font-size:13.5px; line-height:2; color:#a9712f;}
+
+  .page-head{display:flex; align-items:center; gap:10px; margin:4px 0 14px;}
+  .page-head h2{margin:0; font-size:22px; color:var(--pink);}
+  .badge{font-size:12px; padding:4px 12px; border-radius:999px; font-weight:800;}
+  .badge.iron{background:#ffe0e6; color:#e0506c;}
+  .badge.sport{background:#d9f4ee; color:#2f9e86;}
+
+  .module{
+    background:var(--card); border:2px solid #ffe1ec; border-radius:24px;
+    padding:16px 18px; margin-bottom:16px; box-shadow:0 6px 18px rgba(255,158,196,.12);
+  }
+  .module h3{
+    margin:0 0 12px; font-size:15px; color:var(--pink);
+    background:var(--pink-soft); display:inline-block; padding:5px 14px; border-radius:999px;
+  }
+  .items{display:flex; flex-direction:column; gap:9px;}
+  .item{
+    display:flex; gap:12px; align-items:flex-start; cursor:pointer;
+    padding:15px 14px; border-radius:18px; transition:.12s; user-select:none;
+    border:2px solid transparent; touch-action:manipulation;
+  }
+  .item:hover{background:#fff6fb; border-color:#ffe1ec;}
+  .item .box{
+    font-family:"SFMono-Regular",Consolas,monospace; font-weight:800;
+    color:#ffb3d6; white-space:nowrap; font-size:18px; line-height:1.5;
+    background:var(--pink-soft); border-radius:10px; padding:2px 9px;
+  }
+  .item.on .box{color:#fff; background:var(--good);}
+  .item .txt{font-size:16.5px; line-height:1.7;}
+  .item.on .txt{color:var(--muted); text-decoration:line-through; text-decoration-color:#ffc2dc;}
+
+  .footer{
+    display:flex; align-items:center; justify-content:space-between;
+    background:linear-gradient(135deg,#fff0f6,#eafaf4);
+    border:2px solid #ffd9ea; border-radius:24px;
+    padding:18px 20px; margin-top:6px;
+  }
+  .footer .count{font-size:16px; font-weight:800; color:#c2608a;}
+  .footer .num{
+    display:inline-block; min-width:38px; text-align:center;
+    border-bottom:3px dotted #ff9ec4; font-size:22px; color:#ff6f9c; padding:0 4px;
+  }
+  .footer.done{border-color:var(--good); background:linear-gradient(135deg,#eafaf4,#e8fff4);}
+  .footer.done .num{border-color:var(--good); color:var(--good);}
+  .smile{font-size:58px; line-height:1; filter:drop-shadow(0 3px 4px rgba(0,0,0,.1));}
+  .smile.pop{animation:bounce .6s ease;}
+  @keyframes bounce{0%{transform:scale(.2) rotate(-20deg);}50%{transform:scale(1.3) rotate(8deg);}70%{transform:scale(.95);}100%{transform:scale(1);}}
+  .hint{color:var(--muted); font-size:12.5px; margin-top:12px; line-height:1.85;}
+  .rest-note{background:linear-gradient(135deg,#fff0f6,#eafaf4); border:2px dashed #ffc98c; border-radius:24px; padding:24px 18px; text-align:center; font-size:16px; font-weight:800; color:#c2608a; margin-top:6px;}
+
+  /* review */
+  .rgrid{display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin:6px 0 18px;}
+  .ocard{background:#fff; border:2px solid #ffe1ec; border-radius:18px; padding:10px 4px; text-align:center; box-shadow:0 4px 10px rgba(255,158,196,.1);}
+  .ocard .face{font-size:30px;}
+  .ocard .dn{font-size:12px; color:var(--muted); margin-top:4px;}
+  .ocard.ok{border-color:var(--good); background:#eafaf4;}
+
+  .field{display:flex; align-items:center; gap:10px; margin:12px 0; flex-wrap:wrap;}
+  .field label{font-weight:800; font-size:14px; min-width:96px; color:#c2608a;}
+  .field input{
+    border:2px solid #ffe1ec; border-radius:14px; padding:9px 12px; font-size:14px;
+    width:130px; background:#fffafc; color:var(--ink);
+  }
+  .field input:focus{outline:none; border-color:#ff9ec4;}
+  .field .unit{color:var(--muted); font-size:13px;}
+  .field .readout{border:2px solid #ffe1ec; border-radius:14px; padding:9px 12px; font-size:16px; width:130px; background:#fff0f7; color:#e8609b; font-weight:800; text-align:center;}
+  .save-week{border:2px solid #ffe1ec; background:#fff; color:#e8609b; border-radius:14px; padding:10px 16px; font-size:14px; font-weight:800; cursor:pointer; transition:.12s; touch-action:manipulation;}
+  .save-week:hover{background:#fff0f6;}
+  .save-week:active{transform:scale(.97);}
+  .hist{display:flex; flex-direction:column; gap:8px; margin-top:12px;}
+  .hrow{display:flex; flex-wrap:wrap; gap:10px; align-items:center; background:#fffafc; border:1px solid #ffe1ec; border-radius:12px; padding:9px 12px; font-size:13px;}
+  .hrow .hw{font-weight:800; color:#c2608a; min-width:104px;}
+  .hrow .hv{color:var(--ink);}
+  .hist-empty{color:var(--muted); font-size:13px; margin-top:10px; line-height:1.7;}
+
+  .cal{background:#fff; border:2px solid #ffe1ec; border-radius:24px; padding:18px; margin-top:8px; box-shadow:0 6px 18px rgba(255,158,196,.12);}
+  .cal-head{display:flex; align-items:center; justify-content:space-between; gap:12px; font-weight:800; margin-bottom:12px; font-size:15px; color:var(--pink);}
+  .cal-nav{border:2px solid #ffe1ec; background:#fff; color:#ff8ec0; border-radius:50%; width:36px; height:36px; font-size:22px; line-height:1; cursor:pointer; font-weight:800; display:flex; align-items:center; justify-content:center; transition:.12s; flex:0 0 auto; touch-action:manipulation;}
+  .cal-nav:hover:not([disabled]){background:#fff0f6; transform:translateY(-1px);}
+  .cal-nav:active:not([disabled]){transform:scale(.9);}
+  .cal-nav[disabled]{opacity:.3; cursor:not-allowed;}
+  .cal-head .ttl{flex:1; text-align:center; font-size:14.5px;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:7px;}
+  .cal-grid .cell{
+    aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
+    border-radius:14px; font-size:14px; background:#fff6fb; border:2px solid #ffe6f0; color:#d08aab;
+  }
+  .cal-grid .cell.head{background:transparent; border:none; font-weight:800; color:#ff9ec4; font-size:12px;}
+  .cal-grid .cell.empty{background:transparent; border:none;}
+  .cal-grid .cell.lit{background:#eafaf4; border-color:var(--good); font-size:22px;}
+  .cal-grid .cell.clickable{cursor:pointer; transition:transform .12s, box-shadow .12s, border-color .12s;}
+  .cal-grid .cell.clickable:hover{transform:translateY(-2px); box-shadow:0 5px 12px rgba(255,158,196,.35); border-color:#ff9ec4;}
+  .cal-grid .cell.clickable:active{transform:scale(.94);}
+  .cal-grid .cell.today{border-color:var(--pink); border-width:2.5px; box-shadow:0 0 0 3px rgba(255,142,192,.25) inset; font-weight:800;}
+
+  .sec-title{font-size:16px; font-weight:800; margin:20px 0 10px; color:var(--pink);}
+
+  /* 手机打卡优化 */
+  @media (max-width:600px){
+    .app{padding:14px 12px calc(56px + env(safe-area-inset-bottom));}
+    .title h1{font-size:21px;}
+    .title p{font-size:12px;}
+    .module{padding:15px 15px;}
+    .module h3{font-size:14px;}
+    .footer{padding:16px 16px; border-radius:20px;}
+    .footer .count{font-size:15px;}
+    .cal{padding:15px; border-radius:20px;}
+    .cal-grid{gap:5px;}
+    .cal-grid .cell{font-size:13px; border-radius:12px;}
+    .cal-grid .cell.lit{font-size:19px;}
+    .rgrid{gap:6px;}
+    .ocard .face{font-size:26px;}
+    .field input{width:110px;}
+  }
+  @media (max-width:380px){
+    .item .txt{font-size:15.5px;}
+    .cal-grid .cell.head{font-size:11px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="title">
+      <h1>🌸 美丽修炼术</h1>
+      <p>增肌减脂 · 控油抗炎 · 生活执行记录</p>
+    </div>
+    <button class="reset" id="resetBtn">清空全部记录</button>
+  </header>
+  <nav class="tabs" id="tabs"></nav>
+  <main id="view"></main>
+</div>
+
+<script>
+/* ---------- 数据定义 ---------- */
+const days = ["周一","周二","周三","周四","周五","周六","周日"];
+const pageType = {
+  "周一":"rest","周二":"strength","周三":"rest","周四":"strength",
+  "周五":"rest","周六":"cardio","周日":"rest"
+};
+const ironDays = {"周二":true,"周四":true};
+
+function dietFor(day){
+  const breakfast = "早餐：玉米一根、无糖豆浆一杯、全蛋一个 + 蛋白一个";
+  const lunch = "午餐：黑椒鸡排沙拉一份、干岛酱 10 克、全蛋一个";
+  const dinner = ironDays[day]
+    ? "晚餐：煎牛里脊 120 克（补铁日，替换去皮鸡腿）、带皮鸡腿一个、红薯一拳头、水煮绿叶菜不限量"
+    : "晚餐：带皮鸡腿一个、去皮鸡腿一个、红薯一拳头、水煮绿叶菜不限量";
+  if(day === "周六") return [breakfast];                    // 周六仅早餐打卡
+  if(day === "周二" || day === "周四"){
+    const afternoon = "下午加餐：15:00 巴旦木 10 颗、16:45 香蕉一根";   // 仅周二/周四保留带时间的下午加餐
+    return [breakfast, lunch, afternoon, dinner];
+  }
+  return [breakfast, lunch, dinner];                        // 周一/周三/周五 无下午加餐
+}
+const B6_END = new Date(2026, 8, 15);   // 9月15日（含）之前含 B6，之后去掉
+function suppFor(date){
+  const hasB6 = date <= B6_END;
+  return [
+    "早餐随餐：" + (hasB6 ? "B2 + B6（B6 吃满一个月就停）" : "B2"),
+    "晚餐随餐：鱼油 2 粒 + 维生素 C 2 片"
+  ];
+}
+function skinFor(day){
+  if(day === "周一" || day === "周三" || day === "周五"){
+    return ["鼻翼点涂壬二酸（三明治法：面霜打底 → 点涂 → 再盖面霜）"];
+  }
+  if(day === "周二" || day === "周四"){
+    return ["运动后：冷藏纯净水湿敷鼻翼 30 秒"];
+  }
+  return [];   // 周六不设护肤打卡；周日整页无打卡
+}
+function exerciseFor(day){
+  const t = pageType[day];
+  if(t === "strength") return ["靠墙静蹲 70 秒 × 5 组","跪姿俯卧撑 18 个 × 5 组","平板支撑 50 秒 × 5 组","臀桥 20 个 × 4 组"];
+  if(t === "cardio")   return ["爬坡快走 30 分钟（坡度 8，速度 5.5）"];
+  return ["步数达到 6000 步"];
+}
+const reminders = [
+  "早餐必须吃。",
+  "晚餐带皮鸡腿不能全去皮。",
+  "B6 吃满一个月就停。",
+  "前两周体重涨到 96~97 斤是正常的，不要慌。",
+  "看腰围和镜子，不看体重。",
+  "鱼油和维生素 C 每天都要吃。"
+];
+function modulesFor(day, date){
+  if(day === "周日") return [];   // 周日整页不设打卡内容
+  const mods = [
+    {name:"饮食", items:dietFor(day)},
+    {name:"补剂", items:suppFor(date)}
+  ];
+  const sk = skinFor(day);
+  if(sk.length) mods.push({name:"护肤", items:sk});
+  mods.push({name:"运动或休息", items:exerciseFor(day)});
+  return mods;
+}
+
+/* ---------- 状态存储 ---------- */
+const STORE = "checkin_state_v1";
+let state = {};
+try{ state = JSON.parse(localStorage.getItem(STORE) || "{}"); }catch(e){ state = {}; }
+function save(){ localStorage.setItem(STORE, JSON.stringify(state)); }
+function isOn(id){ return !!state[id]; }
+function toggle(id){ state[id] = !state[id]; save(); }
+function itemId(day,mod,i){ return day + "|" + mod + "|" + i; }
+
+function dayComplete(day, date){
+  const mods = modulesFor(day, date);
+  let total=0, checked=0;
+  mods.forEach(m=>m.items.forEach((_,i)=>{
+    const id = itemId(day,m.name,i); total++; if(state[id]) checked++;
+  }));
+  if(total === 0) return true;   // 无打卡项（如周日）视为已达成
+  return checked===total;
+}
+
+// 完成才显示表情：未完成返回空（不显示任何表情），周日用 👑，其余用 😊
+function faceFor(day, date){
+  if(!dayComplete(day, date)) return "";
+  return day === "周日" ? "👑" : "😊";
+}
+
+// 本周执行天数：统计周一~周六中完成的天数（周日休息日不计入执行），按本周实际日期判断 B6 去留
+function weekDoneCount(){
+  const mon = mondayOf(new Date());
+  return days.filter(d=>{
+    if(d === "周日") return false;
+    const dt = new Date(mon); dt.setDate(mon.getDate() + days.indexOf(d));
+    return dayComplete(d, dt);
+  }).length;
+}
+
+function fmtDate(d){
+  const p = n=>String(n).padStart(2,"0");
+  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate());
+}
+function mondayOf(d){
+  const x = new Date(d); const wd = (x.getDay()+6)%7;
+  x.setDate(x.getDate()-wd); x.setHours(0,0,0,0); return x;
+}
+
+/* ---------- 渲染 ---------- */
+const view = document.getElementById("view");
+let current = "周一";
+let viewDate = new Date();   // 当前日期页所代表的日期（点日历某天会切换到那天）
+
+function renderTabs(){
+  const names = days.concat(["每周复盘"]);
+  document.getElementById("tabs").innerHTML = names.map(t=>{
+    const label = (t==="每周复盘") ? "每周复盘" : t+"打卡";
+    return `<button class="tab ${t===current?'active':''}" data-tab="${t}">${label}</button>`;
+  }).join("");
+}
+
+function renderDay(day){
+  const mods = modulesFor(day, viewDate);
+  const iconMap = {"饮食":"🍱","补剂":"💊","护肤":"🧴","运动或休息":"🏃"};
+  let total=0, checked=0;
+  const modHtml = mods.map(m=>{
+    const items = m.items.map((txt,i)=>{
+      const id = itemId(day,m.name,i);
+      const on = isOn(id);
+      if(on) checked++; total++;
+      return `<div class="item ${on?'on':''}" data-id="${id}">
+        <span class="box">${on?'[✓]':'[ ]'}</span>
+        <span class="txt">${txt}</span></div>`;
+    }).join("");
+    return `<section class="module"><h3>${iconMap[m.name]||""} ${m.name}</h3><div class="items">${items}</div></section>`;
+  }).join("");
+  const complete = dayComplete(day, viewDate);
+  const badge = ironDays[day] ? '<span class="badge iron">补铁日</span>'
+              : (day==="周六" ? '<span class="badge sport">运动日</span>' : '');
+  const remHtml = reminders
+    .filter(r => viewDate <= B6_END || !r.includes("B6"))   // B6 截止后不再提示 B6
+    .map(r=>`<li>${r}</li>`).join("");
+  const bodyHtml = mods.length
+    ? `${modHtml}
+    <div class="footer ${complete?'done':''}">
+      <div class="count">今日总勾数：<span class="num">${checked}</span> / ${total}</div>
+      <div class="smile ${complete?'pop':''}">${complete?'😊':'😢'}</div>
+    </div>`
+    : `<div class="rest-note">🌿 今日休息日，自由安排，无需打卡～</div>`;
+  view.innerHTML = `
+    <div class="reminders">
+      <div class="rem-title">🌟 每日小提醒（一定要看哦）</div>
+      <ul>${remHtml}</ul>
+    </div>
+    <div class="page-head"><h2>${day}打卡</h2>${badge}</div>
+    ${bodyHtml}
+    <section class="module" id="calSection">
+      <h3>📅 日历</h3>
+      ${renderCalendar()}
+    </section>
+  `;
+}
+
+function renderReview(){
+  const wKeys = {
+    waist:"review|waist", weight:"review|weight"
+  };
+  const noseOpts = ["明显改善","略有改善","无变化 / 加重"];
+  const oilOpts  = ["明显减少","略有减少","无变化 / 加重"];
+  const doneCount = weekDoneCount();   // 本周执行天数（周日不计入）
+
+  const hist = Array.isArray(state.history) ? state.history.slice().reverse() : [];
+  const histHtml = hist.length ? hist.map(r=>`
+    <div class="hrow">
+      <span class="hw">当周起 ${r.week}</span>
+      <span class="hv">腰围 ${r.waist ? r.waist+" cm" : "—"}</span>
+      <span class="hv">体重 ${r.weight ? r.weight+" 斤" : "—"}</span>
+      <span class="hv">执行 ${r.days} 天</span>
+    </div>`).join("") : `<div class="hist-empty">还没有保存过记录，填好身体数据后点上方按钮保存本周～</div>`;
+
+  const mon = mondayOf(new Date());
+  const overview = days.map(d=>{
+    const dt = new Date(mon); dt.setDate(mon.getDate() + days.indexOf(d));
+    const f = faceFor(d, dt);
+    return `<div class="ocard ${f?'ok':''}"><div class="face">${f}</div><div class="dn">${d}</div></div>`;
+  }).join("");
+
+  const noseHtml = noseOpts.map((t,i)=>{
+    const id="review|nose|"+i, on=isOn(id);
+    return `<div class="item ${on?'on':''}" data-id="${id}"><span class="box">${on?'[✓]':'[ ]'}</span><span class="txt">${t}</span></div>`;
+  }).join("");
+  const oilHtml = oilOpts.map((t,i)=>{
+    const id="review|oil|"+i, on=isOn(id);
+    return `<div class="item ${on?'on':''}" data-id="${id}"><span class="box">${on?'[✓]':'[ ]'}</span><span class="txt">${t}</span></div>`;
+  }).join("");
+
+  view.innerHTML = `
+    <div class="page-head"><h2>每周复盘</h2></div>
+
+    <div class="sec-title">本周完成情况</div>
+    <div class="rgrid">${overview}</div>
+
+    <section class="module">
+      <h3>身体数据</h3>
+      <div class="field">
+        <label>腰围数值</label>
+        <input data-rkey="${wKeys.waist}" value="${state[wKeys.waist]||''}" placeholder="如 68">
+        <span class="unit">cm</span>
+      </div>
+      <div class="field">
+        <label>体重数值</label>
+        <input data-rkey="${wKeys.weight}" value="${state[wKeys.weight]||''}" placeholder="如 96.5">
+        <span class="unit">斤</span>
+      </div>
+      <div class="field">
+        <label>本周执行了</label>
+        <span class="readout">${doneCount}</span>
+        <span class="unit">天</span>
+      </div>
+    </section>
+
+    <section class="module">
+      <h3>鼻翼发红程度</h3>
+      <div class="items">${noseHtml}</div>
+    </section>
+
+    <section class="module">
+      <h3>面部出油情况</h3>
+      <div class="items">${oilHtml}</div>
+    </section>
+
+    <section class="module">
+      <h3>📜 身体数据历史记录</h3>
+      <button class="save-week" id="saveWeekBtn">📌 保存本周记录</button>
+      <div class="hist">${histHtml}</div>
+    </section>
+
+    <section class="module" id="calSection">
+      <h3>日历（笑脸同步）</h3>
+      ${renderCalendar()}
+    </section>
+  `;
+}
+
+const _now0 = new Date();
+const _baseIdx = _now0.getFullYear()*12 + _now0.getMonth();
+const CAL_MIN = _baseIdx - 6;   // 当前月往前 6 个月
+const CAL_MAX = _baseIdx + 6;   // 当前月往后 6 个月（共 13 个月视野）
+let calIdx = _baseIdx;          // 当前显示的月份
+
+function renderCalendar(){
+  const y = Math.floor(calIdx/12), m = calIdx % 12;
+  const names = ["周一","周二","周三","周四","周五","周六","周日"];
+  const start = (new Date(y,m,1).getDay() + 6) % 7;
+  const dim = new Date(y,m+1,0).getDate();
+  const isCurMonth = (calIdx === _baseIdx);
+  const today = _now0.getDate();
+  const disablePrev = calIdx <= CAL_MIN ? "disabled" : "";
+  const disableNext = calIdx >= CAL_MAX ? "disabled" : "";
+  let cells = "";
+  for(let i=0;i<start;i++) cells += '<div class="cell empty"></div>';
+  for(let d=1; d<=dim; d++){
+    const wd = (new Date(y,m,d).getDay() + 6) % 7;
+    const dn = names[wd];
+    const dt = new Date(y, m, d);
+    const f = faceFor(dn, dt);
+    const isToday = isCurMonth && (d === today);
+    const cls = "cell clickable" + (f ? " lit" : "") + (isToday ? " today" : "");
+    const label = f || d;   // 完成显示表情（周日👑 / 其余😊），未完成显示日期数字
+    cells += `<div class="${cls}" data-day="${dn}" data-y="${y}" data-m="${m}" data-d="${d}" title="点击查看 ${dn} 的计划与打卡">${label}</div>`;
+  }
+  return `<div class="cal">
+    <div class="cal-head">
+      <button class="cal-nav prev" data-nav="-1" ${disablePrev} aria-label="上个月">‹</button>
+      <span class="ttl">📅 ${y} 年 ${m+1} 月 · 点日期看当天计划</span>
+      <button class="cal-nav next" data-nav="1" ${disableNext} aria-label="下个月">›</button>
+    </div>
+    <div class="cal-grid">${names.map(n=>`<div class="cell head">${n.slice(1)}</div>`).join("")}${cells}</div>
+  </div>`;
+}
+
+function render(){
+  if(current === "每周复盘") renderReview();
+  else renderDay(current);
+}
+
+/* ---------- 事件 ---------- */
+document.getElementById("tabs").addEventListener("click", e=>{
+  const b = e.target.closest(".tab"); if(!b) return;
+  current = b.dataset.tab; viewDate = new Date(); renderTabs(); render();
+});
+view.addEventListener("click", e=>{
+  const nav = e.target.closest(".cal-nav");
+  if(nav && !nav.disabled){
+    calIdx = Math.min(CAL_MAX, Math.max(CAL_MIN, calIdx + parseInt(nav.dataset.nav,10)));
+    const sec = document.getElementById("calSection");
+    if(sec) sec.innerHTML = renderCalendar();
+    return;
+  }
+  const calCell = e.target.closest(".cell.clickable");
+  if(calCell){
+    const dn = calCell.dataset.day;
+    viewDate = new Date(+calCell.dataset.y, +calCell.dataset.m, +calCell.dataset.d);
+    current = dn; renderTabs(); render();
+    window.scrollTo({top:0, behavior:"smooth"});
+    return;
+  }
+  const it = e.target.closest(".item");
+  if(it){ toggle(it.dataset.id); render(); }
+  const saveBtn = e.target.closest("#saveWeekBtn");
+  if(saveBtn){
+    const wk = fmtDate(mondayOf(new Date()));
+    const rec = {
+      week: wk,
+      waist: state["review|waist"] || "",
+      weight: state["review|weight"] || "",
+      days: weekDoneCount(),
+      ts: Date.now()
+    };
+    if(!Array.isArray(state.history)) state.history = [];
+    const idx = state.history.findIndex(r=>r.week === wk);
+    if(idx >= 0) state.history[idx] = rec; else state.history.push(rec);
+    save(); render();
+  }
+});
+view.addEventListener("input", e=>{
+  const el = e.target.closest("[data-rkey]");
+  if(el){ state[el.dataset.rkey] = el.value; save(); }
+});
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  if(confirm("确定清空所有打卡与复盘记录？此操作不可撤销。")){
+    state = {}; save(); renderTabs(); render();
+  }
+});
+
+/* ---------- 初始化：默认跳到今天对应的星期 ---------- */
+(function init(){
+  const wd = (new Date().getDay() + 6) % 7;
+  if(wd < 7) current = days[wd];
+  renderTabs(); render();
+})();
+</script>
+</body>
+</html>
